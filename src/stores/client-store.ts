@@ -1,16 +1,9 @@
 import { action, computed, makeObservable, observable, runInAction } from 'mobx';
-import { ContentFlag, getDecimalPlaces, isEmptyObject } from '@/components/shared';
 import { isEuCountry, isMultipliersOnly, isOptionsBlocked } from '@/components/shared/common/utility';
-import { removeCookies } from '@/components/shared/utils/storage/storage';
 import { api_base } from '@/external/bot-skeleton';
-import {
-    authData$,
-    balance$,
-    setAccountList,
-    setAuthData,
-    setIsAuthorized,
-} from '@/external/bot-skeleton/services/api/observables/connection-status-stream';
+import { authData$, setAuthData } from '@/external/bot-skeleton/services/api/observables/connection-status-stream';
 import type { TAuthData, TLandingCompany } from '@/types/api-types';
+import { AuthManager } from '@/utils/AuthManager';
 import type { Balance, GetAccountStatus, GetSettings, WebsiteStatus } from '@deriv/api-types';
 import { Analytics } from '@deriv-com/analytics';
 
@@ -55,7 +48,6 @@ export default class ClientStore {
     };
 
     private authDataSubscription: { unsubscribe: () => void } | null = null;
-    private balanceSubscription: { unsubscribe: () => void } | null = null;
 
     constructor() {
         // Hydrate from localStorage immediately
@@ -161,11 +153,7 @@ export default class ClientStore {
             }
         });
 
-        this.balanceSubscription = balance$.subscribe(balance => {
-            if (balance) {
-                this.setAllAccountsBalance(balance);
-            }
-        });
+        // Subscribe to auth data changes
 
         makeObservable(this, {
             accounts: observable,
@@ -583,35 +571,6 @@ export default class ClientStore {
     };
 
     logout = async () => {
-        // reset all the states
-        this.account_list = [];
-        this.account_status = undefined;
-        this.account_settings = undefined;
-        this.landing_companies = undefined;
-        this.accounts = {};
-        this.is_logged_in = false;
-        this.loginid = '';
-        this.balance = '0';
-        this.currency = 'USD';
-
-        this.is_landing_company_loaded = false;
-
-        this.all_accounts_balance = null;
-
-        localStorage.removeItem('active_loginid');
-        localStorage.removeItem('accountsList');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('clientAccounts');
-        removeCookies('client_information');
-
-        setIsAuthorized(false);
-        setAccountList([]);
-        setAuthData(null);
-
-        this.setIsLoggingOut(false);
-
-        Analytics.reset();
-
         // disable livechat
         window.LC_API?.close_chat?.();
         window.LiveChatWidget?.call('hide');
@@ -619,7 +578,7 @@ export default class ClientStore {
         // shutdown and initialize intercom
         if (window.Intercom) {
             window.Intercom('shutdown');
-            window.DerivInterCom.initialize({
+            window.DerivInterCom?.initialize?.({
                 hideLauncher: true,
                 token: null,
             });
@@ -632,17 +591,14 @@ export default class ClientStore {
                 window.location.replace('/');
             }
         };
-        return api_base?.api
-            ?.logout()
-            .then(() => {
-                resolveNavigation();
-                return Promise.resolve();
-            })
-            .catch((error: Error) => {
-                console.error('test Logout failed:', error);
-                resolveNavigation();
-                return Promise.reject(error);
-            });
+
+        const result = await api_base?.api?.logout().catch((error: Error) => {
+            console.error('test Logout failed:', error);
+        });
+
+        AuthManager.logout(false);
+        resolveNavigation();
+        return result;
     };
 
     switchAccount = async (loginId: string) => {

@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { generateOAuthURL } from '@/components/shared/utils/config/config';
-import RootStore from '@/stores/root-store';
-import { handleOidcAuthFailure } from '@/utils/auth-utils';
+import { AuthManager } from '@/utils/AuthManager';
 import { Analytics } from '@deriv-com/analytics';
-import { OAuth2Logout, requestOidcAuthentication } from '@deriv-com/auth-client';
+import { OAuth2Logout } from '@deriv-com/auth-client';
 
 /**
  * Provides an object with properties: `oAuthLogout`, `retriggerOAuth2Login`, and `isSingleLoggingIn`.
@@ -79,7 +77,7 @@ export const useOauth2 = ({
         }
     };
     const retriggerOAuth2Login = async () => {
-        window.location.replace(generateOAuthURL());
+        window.location.replace(AuthManager.getLoginUrl(client?.website_status?.language || 'en'));
     };
 
     return { oAuthLogout: logoutHandler, retriggerOAuth2Login, isSingleLoggingIn };

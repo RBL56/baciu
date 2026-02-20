@@ -18,7 +18,7 @@ import { TAccountSwitcher, TAccountSwitcherProps, TModifiedAccount } from './com
 import { LOW_RISK_COUNTRIES } from './utils';
 import './account-switcher.scss';
 
-const AccountInfoWallets = lazy(() => import('./AccountSwitcherWallet/account-switcher-wallet'));
+const AccountInfoWallets = lazy(() => import('./wallets/account-info-wallets'));
 
 const tabs_labels = {
     demo: localize('Demo'),

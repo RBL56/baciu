@@ -109,3 +109,4 @@ export const AccountSwitcherWallet = observer(({ is_visible, toggle, residence }
         </div>
     );
 });
+export default AccountSwitcherWallet;

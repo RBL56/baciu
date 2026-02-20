@@ -1,5 +1,6 @@
 import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 import { isEuCountry, isMultipliersOnly, isOptionsBlocked } from '@/components/shared/common/utility';
+import { isEmptyObject } from '@/components/shared';
 import { api_base } from '@/external/bot-skeleton';
 import { authData$, setAuthData } from '@/external/bot-skeleton/services/api/observables/connection-status-stream';
 import type { TAuthData, TLandingCompany } from '@/types/api-types';
@@ -28,7 +29,7 @@ export default class ClientStore {
     is_client_initialized = false;
 
     // TODO: fix with self exclusion
-    updateSelfExclusion = () => {};
+    updateSelfExclusion = () => { };
 
     virtual_hook_settings = {
         is_enabled: false,
@@ -241,7 +242,7 @@ export default class ClientStore {
             is_current_mf || //is_currently logged in mf account via tradershub
             (financial_shortcode || gaming_shortcode || mt_gaming_shortcode
                 ? (eu_shortcode_regex.test(financial_shortcode) && gaming_shortcode !== 'svg') ||
-                  eu_shortcode_regex.test(gaming_shortcode)
+                eu_shortcode_regex.test(gaming_shortcode)
                 : eu_excluded_regex.test(this.residence))
         );
     }

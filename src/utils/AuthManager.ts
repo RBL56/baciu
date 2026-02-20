@@ -43,7 +43,6 @@ export const AuthManager = {
         localStorage.removeItem('active_loginid');
         localStorage.removeItem('client.accounts');
         localStorage.removeItem('client.country');
-        localStorage.removeItem('is_manual_auth');
         sessionStorage.removeItem('query_param_currency');
 
         const domain = window.location.hostname.includes('deriv.com') ? '.deriv.com' : undefined;

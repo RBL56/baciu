@@ -38,7 +38,6 @@ const CallbackPage = () => {
                 const accountsList: Record<string, string> = {};
                 const clientAccounts: Record<string, { loginid: string; token: string; currency: string }> = {};
 
-                console.log('CallbackPage: onSignInSuccess', tokens);
                 for (const [key, value] of Object.entries(tokens)) {
                     if (key.startsWith('acct')) {
                         const tokenKey = key.replace('acct', 'token');
@@ -57,8 +56,6 @@ const CallbackPage = () => {
                         }
                     }
                 }
-                console.log('CallbackPage: accountsList', accountsList);
-                console.log('CallbackPage: clientAccounts', clientAccounts);
 
                 localStorage.setItem('accountsList', JSON.stringify(accountsList));
                 localStorage.setItem('clientAccounts', JSON.stringify(clientAccounts));
@@ -102,39 +99,10 @@ const CallbackPage = () => {
                     localStorage.setItem('authToken', tokens.token1);
                     localStorage.setItem('active_loginid', tokens.acct1);
                 }
-                // Mobile Reliability Fix: Verify storage and wait for persistence
-                // These optimizations apply to ALL account types (real, demo, crypto, fiat)
-                const storedToken = localStorage.getItem('authToken');
-                if (!storedToken) {
-                    console.warn('Token not found in storage immediately after set, retrying...');
-                    if (tokens.token1) localStorage.setItem('authToken', tokens.token1);
-                }
-
-                // Set sessionStorage flag to signal OAuth redirect completion
-                // This allows immediate detection in AuthContext without waiting for polling
-                sessionStorage.setItem('oauth_redirect_complete', 'true');
-                console.log('[Callback] OAuth redirect complete flag set');
-
-                // Increased delay to 500ms for mobile localStorage persistence
-                // Mobile browsers need more time to flush localStorage to disk
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                // Final verification that tokens are persisted
-                const finalTokenCheck = localStorage.getItem('authToken');
-                const finalAccountsCheck = localStorage.getItem('accountsList');
-                console.log(
-                    '[Callback] Final storage check - Token:',
-                    !!finalTokenCheck,
-                    'Accounts:',
-                    !!finalAccountsCheck
-                );
-
-                // Determine the appropriate currency to use (supports demo, real, crypto, fiat)
+                // Determine the appropriate currency to use
                 const selected_currency = getSelectedCurrency(tokens, clientAccounts, state);
 
-                window.location.replace(
-                    `${window.location.origin}${window.location.pathname.replace(/\/callback$/, '')}/?account=${selected_currency}`
-                );
+                window.location.replace(window.location.origin + `?account=${selected_currency}`);
             }}
             renderReturnButton={() => {
                 return (

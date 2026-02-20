@@ -1,5 +1,5 @@
 import React from 'react';
-import { TStores } from '@deriv/stores/types';
+import { TStores } from '@/stores/root-store';
 import { AccountSwitcherWalletItem } from './account-switcher-wallet-item';
 import './account-switcher-wallet-list.scss';
 
@@ -9,14 +9,10 @@ type TAccountSwitcherWalletListProps = {
 };
 
 export const AccountSwitcherWalletList = ({ wallets, closeAccountsDialog }: TAccountSwitcherWalletListProps) => {
-    const sortedWallets = [...wallets].sort((a, b) => {
-        // Prioritize virtual accounts (Demo)
-        if (a.is_virtual !== b.is_virtual) {
-            return a.is_virtual ? -1 : 1;
-        }
+    const sortedWallets = [...(wallets || [])].sort((a, b) => {
         // Remove commas from balance strings before converting to numbers
-        const balanceA = Number(a.dtrade_balance?.toString().replace(/,/g, '') || 0);
-        const balanceB = Number(b.dtrade_balance?.toString().replace(/,/g, '') || 0);
+        const balanceA = Number(a.dtrade_balance.toString().replace(/,/g, ''));
+        const balanceB = Number(b.dtrade_balance.toString().replace(/,/g, ''));
         return balanceB - balanceA;
     });
     return (

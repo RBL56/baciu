@@ -102,7 +102,15 @@ const CallbackPage = () => {
                 // Determine the appropriate currency to use
                 const selected_currency = getSelectedCurrency(tokens, clientAccounts, state);
 
-                window.location.replace(window.location.origin + `bot/?account=${selected_currency}`);
+                const redirect_url = sessionStorage.getItem('redirect_url');
+                if (redirect_url) {
+                    const url = new URL(redirect_url);
+                    url.searchParams.set('account', selected_currency);
+                    sessionStorage.removeItem('redirect_url');
+                    window.location.replace(url.toString());
+                } else {
+                    window.location.replace(window.location.origin + `/?account=${selected_currency}`);
+                }
             }}
             renderReturnButton={() => {
                 return (

@@ -1,4 +1,6 @@
 import { AuthManager } from '@/utils/AuthManager';
+import { isStorageSupported } from '../storage/storage';
+import { getStaticUrl } from '../url/url';
 
 export const redirectToLogin = (is_logged_in: boolean, language: string, has_params = true, redirect_delay = 0) => {
     if (!is_logged_in && isStorageSupported(sessionStorage)) {

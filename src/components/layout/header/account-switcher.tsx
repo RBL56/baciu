@@ -2,14 +2,12 @@ import React, { useEffect } from 'react';
 import { lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { CurrencyIcon } from '@/components/currency/currency-icon';
-import { addComma, getDecimalPlaces, isEmptyObject } from '@/components/shared';
+import { addComma, getDecimalPlaces } from '@/components/shared';
 import Popover from '@/components/shared_ui/popover';
-import { api_base } from '@/external/bot-skeleton';
 import { useOauth2 } from '@/hooks/auth/useOauth2';
 import { useApiBase } from '@/hooks/useApiBase';
 import { useStore } from '@/hooks/useStore';
 import { waitForDomElement } from '@/utils/dom-observer';
-import { Analytics } from '@deriv-com/analytics';
 import { localize } from '@deriv-com/translations';
 import { AccountSwitcher as UIAccountSwitcher, Loader, useDevice } from '@deriv-com/ui';
 import DemoAccounts from './common/demo-accounts';
@@ -136,30 +134,7 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
     }, [modifiedAccountList]);
 
     const switchAccount = async (loginId: string) => {
-        if (loginId === activeAccount?.loginid) return;
-        const account_list = JSON.parse(localStorage.getItem('accountsList') ?? '{}');
-        const token = account_list[loginId];
-        if (!token) return;
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('active_loginid', loginId);
-        const account_type =
-            loginId
-                .toString()
-                .match(/[a-zA-Z]+/g)
-                ?.join('') || '';
-
-        Analytics.setAttributes({
-            account_type,
-        });
-        await api_base?.init(true);
-        const search_params = new URLSearchParams(window.location.search);
-        const selected_account = modifiedAccountList.find(acc => acc.loginid === loginId);
-        if (!selected_account) return;
-        const account_param = selected_account.is_virtual ? 'demo' : selected_account.currency;
-        search_params.set('account', account_param);
-        sessionStorage.setItem('query_param_currency', account_param);
-        window.history.pushState({}, '', `${window.location.pathname}?${search_params.toString()}`);
-        window.location.reload();
+        await client.switchAccount(loginId);
     };
 
     return (

@@ -12,8 +12,8 @@ import { Button } from '@deriv-com/ui';
  */
 const getSelectedCurrency = (
     tokens: Record<string, string>,
-    clientAccounts: Record<string, any>,
-    state: any
+    clientAccounts: Record<string, { loginid: string; token: string; currency: string }>,
+    state: { account?: string } | null
 ): string => {
     const getQueryParams = new URLSearchParams(window.location.search);
     const currency =
@@ -102,7 +102,7 @@ const CallbackPage = () => {
                 // Determine the appropriate currency to use
                 const selected_currency = getSelectedCurrency(tokens, clientAccounts, state);
 
-                window.location.replace(window.location.origin + `?account=${selected_currency}`);
+                window.location.replace(window.location.origin + `bot/?account=${selected_currency}`);
             }}
             renderReturnButton={() => {
                 return (

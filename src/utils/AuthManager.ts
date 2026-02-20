@@ -89,6 +89,9 @@ export const AuthManager = {
         console.log('[AuthManager] Processing OAuth callback with', accounts.length, 'accounts');
         const primaryToken = accounts[0].token;
 
+        // We skip the blocking authorize call to prevent hangs.
+        // CoreStoreProvider will handle full authorization and account list updates.
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const clientAccounts: Record<string, any> = {};
         const accountsList: Record<string, string> = {};
@@ -130,13 +133,24 @@ export const AuthManager = {
 
             console.log('[AuthManager] Successfully saved tokens to localStorage');
 
+            // Debugging: Log what we saved
+            console.log('[AuthManager] Saved active_loginid:', activeLoginid);
+            console.log('[AuthManager] Saved authToken:', primaryToken);
+
             // Redirect Back Into The Bot After Parsing
+            // Clean the URL by removing query params but keeping the path
             const cleanUrl = window.location.origin + window.location.pathname;
             const redirectUrl = new URL(cleanUrl);
             const isVirtual = activeLoginid.startsWith('VR') || activeLoginid.startsWith('VRW');
             redirectUrl.searchParams.set('account', isVirtual ? 'demo' : activeCurrency);
 
+            console.log('[AuthManager] Redirecting to:', redirectUrl.toString());
+
+            // Use replaceState to immediately clean history
             window.history.replaceState({}, document.title, redirectUrl.toString());
+
+            // Force reload to apply changes
+            console.log('[AuthManager] Forcing reload...');
             window.location.reload();
             return true;
         }

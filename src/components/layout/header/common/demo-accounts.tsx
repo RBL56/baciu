@@ -1,46 +1,64 @@
-import React from 'react';
+import clsx from 'clsx';
+import { api_base } from '@/external/bot-skeleton';
 import { localize } from '@deriv-com/translations';
 import { AccountSwitcher as UIAccountSwitcher } from '@deriv-com/ui';
-import { TAccountSwitcherProps, TModifiedAccount } from './types';
+import AccountSwitcherFooter from './account-swticher-footer';
+import { TDemoAccounts } from './types';
+import { AccountSwitcherDivider, convertCommaValue } from './utils';
 
 const DemoAccounts = ({
+    tabs_labels,
     modifiedVRTCRAccountList,
     switchAccount,
+    isVirtual,
     activeLoginId,
-    tabs_labels,
     oAuthLogout,
     is_logging_out,
-}: TAccountSwitcherProps) => {
+}: TDemoAccounts) => {
     return (
-        <div className='account-switcher-panel'>
-            <div className='account-switcher-panel__demo'>
-                <UIAccountSwitcher.AccountsPanel
-                    title={tabs_labels.demo}
-                >
-                    {modifiedVRTCRAccountList?.map((account: TModifiedAccount) => (
-                        <UIAccountSwitcher.AccountsItem
+        <>
+            <UIAccountSwitcher.AccountsPanel
+                isOpen
+                title={localize('Deriv account')}
+                className='account-switcher-panel'
+                key={tabs_labels.demo.toLowerCase()}
+            >
+                {modifiedVRTCRAccountList &&
+                    modifiedVRTCRAccountList.map(account => (
+                        <span
+                            className={clsx('account-switcher__item', {
+                                'account-switcher__item--disabled': account.is_disabled,
+                            })}
                             key={account.loginid}
-                            account={account}
-                            onSelectAccount={() => switchAccount(account.loginid)}
-                            isActive={activeLoginId === account.loginid}
-                        />
-                    ))}
-                    <UIAccountSwitcher.Footer
-                        onClick={oAuthLogout}
-                        title={localize('Logout')}
-                        footerIcon={
-                            <img
-                                src='https://static.deriv.com/static/bot/images/ic-logout.svg'
-                                alt='logout'
-                                width={16}
-                                height={16}
+                        >
+                            <UIAccountSwitcher.AccountsItem
+                                account={account}
+                                onSelectAccount={() => {
+                                    if (!account.is_disabled) switchAccount(account.loginid);
+                                }}
+                                onResetBalance={
+                                    isVirtual &&
+                                    activeLoginId === account.loginid &&
+                                    convertCommaValue(account.balance) !== 10000
+                                        ? () => {
+                                              api_base?.api?.send({
+                                                  topup_virtual: 1,
+                                              });
+                                          }
+                                        : undefined
+                                }
                             />
-                        }
-                        isLoggingOut={is_logging_out}
-                    />
-                </UIAccountSwitcher.AccountsPanel>
-            </div>
-        </div>
+                        </span>
+                    ))}
+            </UIAccountSwitcher.AccountsPanel>
+            <AccountSwitcherDivider />
+            <AccountSwitcherFooter
+                loginid={activeLoginId}
+                oAuthLogout={oAuthLogout}
+                is_logging_out={is_logging_out}
+                type='demo'
+            />
+        </>
     );
 };
 

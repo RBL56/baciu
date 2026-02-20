@@ -36,7 +36,7 @@ const CallbackPage = () => {
             onSignInSuccess={async (tokens: Record<string, string>, rawState: unknown) => {
                 const state = rawState as { account?: string } | null;
                 const accountsList: Record<string, string> = {};
-                const clientAccounts: Record<string, { loginid: string; token: string; currency: string }> = {};
+                const clientAccounts: Record<string, any> = {};
 
                 for (const [key, value] of Object.entries(tokens)) {
                     if (key.startsWith('acct')) {
@@ -51,7 +51,7 @@ const CallbackPage = () => {
                         }
                     } else if (key.startsWith('cur')) {
                         const accKey = key.replace('cur', 'acct');
-                        if (tokens[accKey]) {
+                        if (tokens[accKey] && clientAccounts[tokens[accKey]]) {
                             clientAccounts[tokens[accKey]].currency = value;
                         }
                     }
@@ -64,7 +64,7 @@ const CallbackPage = () => {
 
                 const api = await generateDerivApiInstance();
                 if (api) {
-                    const { authorize, error } = await api.authorize(tokens.token1);
+                    const { authorize, error } = (await api.authorize(tokens.token1)) as any;
                     api.disconnect();
                     if (error) {
                         // Check if the error is due to an invalid token
@@ -83,22 +83,42 @@ const CallbackPage = () => {
                                 clearAuthData();
                             }
                         }
-                    } else {
-                        localStorage.setItem('callback_token', authorize.toString());
-                        const clientAccountsArray = Object.values(clientAccounts);
-                        const firstId = authorize?.account_list[0]?.loginid;
-                        const filteredTokens = clientAccountsArray.filter(account => account.loginid === firstId);
-                        if (filteredTokens.length) {
-                            localStorage.setItem('authToken', filteredTokens[0].token);
-                            localStorage.setItem('active_loginid', filteredTokens[0].loginid);
-                            is_token_set = true;
-                        }
+                    } else if (authorize) {
+                        localStorage.setItem('callback_token', JSON.stringify(authorize));
+                        localStorage.setItem('active_loginid', authorize.loginid);
+                        localStorage.setItem('authToken', tokens.token1);
+                        localStorage.setItem('client.country', authorize.country);
+
+                        // Update accounts list and details from authorize response
+                        authorize.account_list.forEach((acc: any) => {
+                            const token = accountsList[acc.loginid] || tokens.token1;
+                            accountsList[acc.loginid] = token;
+                            clientAccounts[acc.loginid] = {
+                                ...acc,
+                                token,
+                            };
+                        });
+
+                        localStorage.setItem('accountsList', JSON.stringify(accountsList));
+                        localStorage.setItem('clientAccounts', JSON.stringify(clientAccounts));
+                        is_token_set = true;
                     }
                 }
+
                 if (!is_token_set) {
                     localStorage.setItem('authToken', tokens.token1);
                     localStorage.setItem('active_loginid', tokens.acct1);
                 }
+
+                // Set logged_state cookie
+                const domain = window.location.hostname.includes('deriv.com') ? '.deriv.com' : undefined;
+                Cookies.set('logged_state', 'true', {
+                    expires: 30,
+                    path: '/',
+                    domain: domain,
+                    secure: true,
+                    sameSite: 'lax',
+                });
                 // Determine the appropriate currency to use
                 const selected_currency = getSelectedCurrency(tokens, clientAccounts, state);
 

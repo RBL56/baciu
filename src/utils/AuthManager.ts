@@ -38,11 +38,10 @@ export const AuthManager = {
     logout: (is_reload: boolean = true) => {
         localStorage.removeItem('accountsList');
         localStorage.removeItem('clientAccounts');
-        localStorage.removeItem('callback_token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('active_loginid');
-        localStorage.removeItem('client.accounts');
         localStorage.removeItem('client.country');
+        localStorage.removeItem('client.all_accounts_balance');
+        localStorage.removeItem('client_account_details');
+        localStorage.removeItem('client_information');
         sessionStorage.removeItem('query_param_currency');
 
         const domain = window.location.hostname.includes('deriv.com') ? '.deriv.com' : undefined;
@@ -89,16 +88,13 @@ export const AuthManager = {
         console.log('[AuthManager] Processing OAuth callback with', accounts.length, 'accounts');
         const primaryToken = accounts[0].token;
 
-        // We skip the blocking authorize call to prevent hangs.
-        // CoreStoreProvider will handle full authorization and account list updates.
-
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const clientAccounts: Record<string, any> = {};
         const accountsList: Record<string, string> = {};
 
         // Merge/Add accounts from URL
         accounts.forEach(urlAccount => {
-            if (!clientAccounts[urlAccount.loginid]) {
+            if (urlAccount.loginid && !clientAccounts[urlAccount.loginid]) {
                 clientAccounts[urlAccount.loginid] = {
                     loginid: urlAccount.loginid,
                     token: urlAccount.token,
@@ -118,8 +114,6 @@ export const AuthManager = {
             const activeCurrency = accounts[0].currency || 'USD';
 
             localStorage.setItem('active_loginid', activeLoginid);
-            localStorage.setItem('currency', activeCurrency);
-            localStorage.setItem('balance', '0');
             localStorage.setItem('authToken', primaryToken);
 
             const domain = window.location.hostname.includes('deriv.com') ? '.deriv.com' : undefined;

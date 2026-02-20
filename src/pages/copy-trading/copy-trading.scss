@@ -4,7 +4,7 @@
 .copy-trading-page {
     --primary: #00d4c4;
     --primary-dark: #00b8a8;
-    --purple: #8b5cf6;
+    --purple: #{$color-purple};
     --danger: #ff4757;
     --success: #2ed573;
     --warning: #ffa502;
@@ -125,6 +125,7 @@
     }
 
     @keyframes pulse {
+
         0%,
         100% {
             opacity: 1;
@@ -224,7 +225,7 @@
         gap: 24px;
         margin-bottom: 24px;
 
-        @media (width >= 769px) {
+        @media (width >=769px) {
             grid-template-columns: 1fr 1fr;
         }
     }
@@ -279,7 +280,7 @@
         background: rgb(255 255 255 / 3%);
         border-radius: 8px;
 
-        @media (width <= 480px) {
+        @media (width <=480px) {
             grid-template-columns: 1fr;
         }
     }
@@ -448,7 +449,7 @@
         }
     }
 
-    @media (width <= 768px) {
+    @media (width <=768px) {
         .token-item {
             flex-direction: column;
             align-items: flex-start;

@@ -30,7 +30,9 @@ const VOLATILITY_OPTIONS = [
 const TICK_OPTIONS = [
     { value: 10, label: '10 ticks' },
     { value: 50, label: '50 ticks' },
+    { value: 60, label: '60 ticks' },
     { value: 100, label: '100 ticks' },
+    { value: 120, label: '120 ticks' },
     { value: 500, label: '500 ticks' },
     { value: 1000, label: '1000 ticks' },
     { value: 2000, label: '2000 ticks' },

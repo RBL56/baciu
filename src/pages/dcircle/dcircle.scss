@@ -285,12 +285,12 @@
         }
 
         &.active {
-            background-color: #4a148c;
-            box-shadow: 0 0 20px rgb(156 39 176 / 70%);
+            background-color: $color-purple;
+            box-shadow: 0 0 20px rgba($color-purple, 0.7);
             transform: scale(1.1);
 
             .percentage-bar {
-                background: rgb(156 39 176 / 40%);
+                background: rgba($color-purple, 0.4);
             }
 
             span {
